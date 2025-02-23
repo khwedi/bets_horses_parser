@@ -64,36 +64,6 @@ async def process_described_data(horse_object):
         await update_queue.put((horse_object.status, horse_object.bk1_winloss, horse_object.id))
 
 
-# async def main():
-#     await connector.open_connect()
-#     await bat.init_class()
-#     await bat.preparations()
-#
-#     asyncio.create_task(process_horse_element())
-#     asyncio.create_task(update_processor())
-#
-#     try:
-#         while True:
-#             output_object_massive = await get_db_data()
-#
-#             if output_object_massive:
-#                 parser_tasks = []
-#                 for element in output_object_massive:
-#                     parser_tasks.append(asyncio.create_task(process_described_data(element)))
-#
-#                 await asyncio.gather(*parser_tasks)
-#             else:
-#                 print("No outstanding bets")
-#                 await asyncio.sleep(10)
-#                 continue
-#
-#     except Exception as error:
-#         print(f"An error occurred while executing the main code: {error}")
-#         await asyncio.sleep(30)
-#     finally:
-#         await calc_queue.join()
-#         await update_queue.join()
-#         print("Stopping background tasks")
 async def main():
     await connector.open_connect()
     await bat.init_class()
@@ -103,19 +73,19 @@ async def main():
     asyncio.create_task(update_processor())
 
     try:
-        output_object_massive = await get_db_data()
-        batch_size = 10
-        parser_tasks = []
+        while True:
+            output_object_massive = await get_db_data()
 
-        for i in range(0, len(output_object_massive), batch_size):
-            batch = output_object_massive[i:i + batch_size]
-            for element in batch:
-                parser_tasks.append(asyncio.create_task(process_described_data(element)))
+            if output_object_massive:
+                parser_tasks = []
+                for element in output_object_massive:
+                    parser_tasks.append(asyncio.create_task(process_described_data(element)))
 
-            await asyncio.gather(*parser_tasks)
-
-            print(f"Calc Queue size after batch processing: {calc_queue.qsize()}")
-            print(f"Update Queue size after batch processing: {update_queue.qsize()}")
+                await asyncio.gather(*parser_tasks)
+            else:
+                print("No outstanding bets")
+                await asyncio.sleep(10)
+                continue
 
     except Exception as error:
         print(f"An error occurred while executing the main code: {error}")
@@ -124,9 +94,39 @@ async def main():
         await calc_queue.join()
         await update_queue.join()
         print("Stopping background tasks")
-
-if __name__ == "__main__":
-    asyncio.run(main())
+# async def main():
+#     await connector.open_connect()
+#     await bat.init_class()
+#     await bat.preparations()
+#
+#     asyncio.create_task(process_horse_element())
+#     asyncio.create_task(update_processor())
+#
+#     try:
+#         output_object_massive = await get_db_data()
+#         batch_size = 10
+#         parser_tasks = []
+#
+#         for i in range(0, len(output_object_massive), batch_size):
+#             batch = output_object_massive[i:i + batch_size]
+#             for element in batch:
+#                 parser_tasks.append(asyncio.create_task(process_described_data(element)))
+#
+#             await asyncio.gather(*parser_tasks)
+#
+#             print(f"Calc Queue size after batch processing: {calc_queue.qsize()}")
+#             print(f"Update Queue size after batch processing: {update_queue.qsize()}")
+#
+#     except Exception as error:
+#         print(f"An error occurred while executing the main code: {error}")
+#         await asyncio.sleep(30)
+#     finally:
+#         await calc_queue.join()
+#         await update_queue.join()
+#         print("Stopping background tasks")
+#
+# if __name__ == "__main__":
+#     asyncio.run(main())
 
 
 

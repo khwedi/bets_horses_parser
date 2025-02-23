@@ -30,7 +30,8 @@ class Variables:
                             where 1=1
                                 and pb.sport = 'horses'
                                 and pb.status in ('STAKED','NO_RESULT')
-                                and pb.stake_timestamp >= current_date - interval 3 day
+                                and pb.stake_timestamp >= current_date - interval 2 day
+                            LIMIT 10
                             """
         self.updata_script = """UPDATE sharp.placed_bets
                                 set status = %s, bk1_winloss = %s
